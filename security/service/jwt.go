@@ -19,7 +19,6 @@ type JWTTokenService struct {
 
 type JWTConfiguration struct {
 	Issuer     string
-	Subject    string
 	Audience   string
 	Expiry     *time.Time
 	PublicKey  []byte
@@ -28,11 +27,18 @@ type JWTConfiguration struct {
 
 var (
 	errTokenTypeConversion = errors.New("unable to assert token claims type")
+	errEmptyClaimsID       = errors.New("userID cannot be blank in claims")
 )
 
 func NewJWTTokenService(config *JWTConfiguration) *JWTTokenService {
 
-	jwtTokenService := &JWTTokenService{}
+	jwtTokenService := &JWTTokenService{
+		issuer:     config.Issuer,
+		audience:   config.Audience,
+		expiry:     config.Expiry,
+		privateKey: config.PrivateKey,
+		publicKey:  config.PrivateKey,
+	}
 
 	switch {
 
@@ -43,21 +49,14 @@ func NewJWTTokenService(config *JWTConfiguration) *JWTTokenService {
 		jwtTokenService.issuer = "Digital Dash Security Service"
 		fallthrough
 
-	case config.Subject == "":
-		jwtTokenService.subject = "Digital Dash JWT"
-		fallthrough
-
 	case config.Audience == "":
 		jwtTokenService.audience = "Digital Dash Clients"
 		fallthrough
 
 	case config.Expiry == nil:
-		expiry := time.Now().Add(30 * time.Minute)
+		expiry := time.Now().Add(15 * time.Minute)
 		jwtTokenService.expiry = &expiry
 	}
-
-	jwtTokenService.privateKey = config.PrivateKey
-	jwtTokenService.publicKey = config.PublicKey
 
 	return jwtTokenService
 }
@@ -68,11 +67,12 @@ func (s *JWTTokenService) CreateToken(claims *models.UserAUTHClaims) (string, er
 		return "", err
 	}
 
-	// validate claims struct
-	s.validateTokenClaims(claims)
+	claims.RegisteredClaims.Subject = claims.UserID
 
-	//set default token claims if not preset
-	s.setDefaultClaims(claims)
+	// validate claims struct
+	if err = s.validateTokenClaims(claims); err != nil {
+		return "", err
+	}
 
 	jwtClaims := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims)
 
@@ -110,28 +110,8 @@ func (s *JWTTokenService) ParseToken(token string) (*models.UserAUTHClaims, erro
 func (s *JWTTokenService) validateTokenClaims(claims *models.UserAUTHClaims) error {
 	switch {
 	case claims.UserID == "":
-		return errors.New("userID cannot be blank in claims")
+		return errEmptyClaimsID
 	}
 
 	return nil
-}
-
-func (s *JWTTokenService) setDefaultClaims(claims *models.UserAUTHClaims) {
-	switch {
-
-	case claims.ExpiresAt == nil:
-		claims.ExpiresAt = jwt.NewNumericDate(*s.expiry)
-		fallthrough
-
-	case claims.Issuer == "":
-		claims.Issuer = s.issuer
-		fallthrough
-
-	case claims.Subject == "":
-		claims.Subject = s.subject
-		fallthrough
-
-	case claims.Audience == nil:
-		claims.Audience = []string{s.audience}
-	}
 }

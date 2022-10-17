@@ -17,10 +17,7 @@ func (p *PasswordService) Encrypt(password string) ([]byte, error) {
 	if password == "" {
 		return nil, errs.ErrEmptyInput
 	}
-
-	pSlice := []byte(password)
-
-	return bcrypt.GenerateFromPassword(pSlice, p.EncryptionCost)
+	return bcrypt.GenerateFromPassword([]byte(password), p.EncryptionCost)
 }
 
 func (p *PasswordService) IsPassword(pwHash, password []byte) (bool, error) {
