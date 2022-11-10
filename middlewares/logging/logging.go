@@ -69,6 +69,7 @@ func HTTPLogger(config ...Config) fiber.Handler {
 
 		req := loggedRequest{
 			StatusCode:      c.Response().StatusCode(),
+			URI:             c.Path(),
 			Headers:         c.GetReqHeaders(),
 			ResponseHeaders: c.GetRespHeaders(),
 			Body:            string(c.Body()),
