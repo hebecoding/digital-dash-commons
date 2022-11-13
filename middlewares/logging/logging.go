@@ -1,7 +1,6 @@
 package logging
 
 import (
-	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/xid"
 	"go.uber.org/zap"
@@ -30,6 +29,7 @@ type loggedRequest struct {
 	RequestID       string            `json:"requestID"`
 	InteractionID   string            `json:"interactionID"`
 	Latency         string            `json:"latency,omitempty"`
+	Params          map[string]string `json:"params"`
 	Headers         map[string]string `json:"headers"`
 	ResponseHeaders map[string]string `json:"responseHeaders"`
 }
@@ -72,6 +72,7 @@ func HTTPLogger(config ...Config) fiber.Handler {
 			URI:             c.Path(),
 			Headers:         c.GetReqHeaders(),
 			ResponseHeaders: c.GetRespHeaders(),
+			Params:          c.AllParams(),
 			Body:            string(c.Body()),
 			ResponseBody:    c.Response().String(),
 			IPAddress:       c.IP(),
@@ -81,7 +82,7 @@ func HTTPLogger(config ...Config) fiber.Handler {
 			Latency:         strconv.FormatInt(time.Since(start).Milliseconds(), 10),
 		}
 
-		cfg.Logger.Info(fmt.Sprintf("RequestID: %s", req.RequestID), zap.Any("Request", req))
+		cfg.Logger.Sugar().Info(req)
 
 		return err
 	}
