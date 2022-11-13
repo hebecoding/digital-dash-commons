@@ -14,20 +14,19 @@ type Config struct {
 }
 
 const (
-	reqID         = "X-Request-ID"
-	interactionID = "X-Interaction-ID"
+	reqID = "X-Request-ID"
 )
 
 type loggedRequest struct {
 	StatusCode      int               `json:"statusCode"`
-	Latency         int64             `json:"latency,omitempty"`
+	Latency         time.Duration     `json:"latency,omitempty"`
 	Body            string            `json:"body,omitempty"`
 	ResponseBody    string            `json:"responseBody,omitempty"`
 	Method          string            `json:"method"`
 	URI             string            `json:"uri"`
 	IPAddress       string            `json:"ipAddress"`
 	RequestID       string            `json:"requestID"`
-	Params          map[string]string `json:"params"`
+	Query           string            `json:"queryString"`
 	Headers         map[string]string `json:"headers"`
 	ResponseHeaders map[string]string `json:"responseHeaders"`
 }
@@ -64,13 +63,13 @@ func HTTPLogger(config ...Config) fiber.Handler {
 			URI:             c.Path(),
 			Headers:         c.GetReqHeaders(),
 			ResponseHeaders: c.GetRespHeaders(),
-			Params:          c.AllParams(),
+			Query:           c.Request().URI().QueryArgs().String(),
 			Body:            string(c.Body()),
 			ResponseBody:    c.Response().String(),
 			IPAddress:       c.IP(),
 			RequestID:       requestID,
 			Method:          c.Method(),
-			Latency:         time.Since(start).Milliseconds(),
+			Latency:         time.Since(start),
 		}
 
 		cfg.Logger.Info(req.RequestID, zap.Any("request", req))
