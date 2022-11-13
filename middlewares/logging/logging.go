@@ -27,7 +27,6 @@ type loggedRequest struct {
 	URI             string            `json:"uri"`
 	IPAddress       string            `json:"ipAddress"`
 	RequestID       string            `json:"requestID"`
-	InteractionID   string            `json:"interactionID"`
 	Params          map[string]string `json:"params"`
 	Headers         map[string]string `json:"headers"`
 	ResponseHeaders map[string]string `json:"responseHeaders"`
@@ -52,16 +51,10 @@ func HTTPLogger(config ...Config) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 
 		requestID := c.Get(reqID)
-		intID := c.Get(interactionID)
 
 		if requestID == "" {
 			requestID = xid.New().String()
 			c.Set(reqID, requestID)
-		}
-
-		if intID == "" {
-			intID = xid.New().String()
-			c.Set(interactionID, intID)
 		}
 
 		err := c.Next()
@@ -76,7 +69,6 @@ func HTTPLogger(config ...Config) fiber.Handler {
 			ResponseBody:    c.Response().String(),
 			IPAddress:       c.IP(),
 			RequestID:       requestID,
-			InteractionID:   intID,
 			Method:          c.Method(),
 			Latency:         time.Since(start).Milliseconds(),
 		}
