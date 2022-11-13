@@ -5,7 +5,6 @@ import (
 	"github.com/rs/xid"
 	"go.uber.org/zap"
 	"log"
-	"strconv"
 	"time"
 )
 
@@ -21,6 +20,7 @@ const (
 
 type loggedRequest struct {
 	StatusCode      int               `json:"statusCode"`
+	Latency         int64             `json:"latency,omitempty"`
 	Body            string            `json:"body,omitempty"`
 	ResponseBody    string            `json:"responseBody,omitempty"`
 	Method          string            `json:"method"`
@@ -28,7 +28,6 @@ type loggedRequest struct {
 	IPAddress       string            `json:"ipAddress"`
 	RequestID       string            `json:"requestID"`
 	InteractionID   string            `json:"interactionID"`
-	Latency         string            `json:"latency,omitempty"`
 	Params          map[string]string `json:"params"`
 	Headers         map[string]string `json:"headers"`
 	ResponseHeaders map[string]string `json:"responseHeaders"`
@@ -79,10 +78,10 @@ func HTTPLogger(config ...Config) fiber.Handler {
 			RequestID:       requestID,
 			InteractionID:   intID,
 			Method:          c.Method(),
-			Latency:         strconv.FormatInt(time.Since(start).Milliseconds(), 10),
+			Latency:         time.Since(start).Milliseconds(),
 		}
 
-		cfg.Logger.Sugar().Info(req)
+		cfg.Logger.Info(req.RequestID, zap.Any("request", req))
 
 		return err
 	}
