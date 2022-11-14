@@ -27,12 +27,12 @@ type loggedRequest struct {
 	IPAddress       string            `json:"ipAddress"`
 	RequestID       string            `json:"requestID"`
 	Query           string            `json:"query,omitempty"`
+	Parms           map[string]string `json:"parms,omitempty"`
 	Headers         map[string]string `json:"headers"`
 	ResponseHeaders map[string]string `json:"responseHeaders"`
 }
 
 func HTTPLogger(config ...Config) fiber.Handler {
-	start := time.Now()
 	cfg := Config{}
 
 	if len(config) > 0 {
@@ -47,7 +47,7 @@ func HTTPLogger(config ...Config) fiber.Handler {
 	}
 
 	return func(c *fiber.Ctx) error {
-
+		start := time.Now()
 		requestID := c.Get(reqID)
 
 		if requestID == "" {
@@ -71,6 +71,7 @@ func HTTPLogger(config ...Config) fiber.Handler {
 			RequestID:       requestID,
 			Method:          c.Method(),
 			Latency:         latency,
+			Parms:           c.AllParams(),
 		}
 
 		cfg.Logger.Info(req.RequestID, zap.Any("request", req))
