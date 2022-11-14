@@ -19,7 +19,7 @@ const (
 
 type loggedRequest struct {
 	StatusCode      int               `json:"statusCode"`
-	Latency         float64           `json:"latency,omitempty"`
+	Latency         int64             `json:"latency,omitempty"`
 	Body            string            `json:"body,omitempty"`
 	ResponseBody    string            `json:"responseBody,omitempty"`
 	Method          string            `json:"method"`
@@ -57,7 +57,7 @@ func HTTPLogger(config ...Config) fiber.Handler {
 
 		err := c.Next()
 
-		latency := time.Since(start).Seconds()
+		latency := time.Since(start).Milliseconds()
 
 		req := loggedRequest{
 			StatusCode:      c.Response().StatusCode(),
