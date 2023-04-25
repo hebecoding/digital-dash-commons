@@ -4,75 +4,58 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"encoding/base64"
+	"errors"
 	"io"
-	"log"
 )
 
 type EncryptionService struct {
-	Key string
+	gcm cipher.AEAD
 }
 
-const (
-	encryptionFailed = "failed to encrypt value"
-	decryptionFailed = "failed to decrypt value"
-)
-
-func NewEncryptionService(key string) *EncryptionService {
-	return &EncryptionService{Key: key}
-}
-
-func (s *EncryptionService) Encrypt(data string) (string, error) {
-
-	block, err := aes.NewCipher([]byte(s.Key))
-	if err != nil {
-		log.Println(encryptionFailed)
-		return "", err
-	}
-
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		log.Println(encryptionFailed)
-		return "", err
-	}
-
-	nonce := make([]byte, gcm.NonceSize())
-
-	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		log.Println(encryptionFailed)
-		return "", err
-	}
-
-	encryptedData := gcm.Seal(nonce, nonce, []byte(data), nil)
-
-	return string(encryptedData), nil
-}
-
-func (s *EncryptionService) Decrypt(data string) (string, error) {
-	dataBytes := []byte(data)
-
-	key := []byte(s.Key)
+func NewEncryptionService(key []byte) (*EncryptionService, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		log.Println(decryptionFailed)
-		return "", err
+		return nil, err
 	}
 
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		log.Println(decryptionFailed)
+		return nil, err
+	}
+
+	return &EncryptionService{gcm: gcm}, nil
+}
+
+func (e *EncryptionService) Encrypt(input string) (string, error) {
+	if len(input) == 0 {
+		return "", errors.New("input string cannot be empty")
+	}
+
+	nonce := make([]byte, e.gcm.NonceSize())
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
 		return "", err
 	}
 
-	nonceSize := gcm.NonceSize()
+	ciphertext := e.gcm.Seal(nonce, nonce, []byte(input), nil)
+	return base64.StdEncoding.EncodeToString(ciphertext), nil
+}
 
-	nonce, ciphertext := dataBytes[:nonceSize], dataBytes[nonceSize:]
-
-	decryptedText, err := gcm.Open(nil, nonce, ciphertext, nil)
+func (e *EncryptionService) Decrypt(encrypted string) (string, error) {
+	ciphertext, err := base64.StdEncoding.DecodeString(encrypted)
 	if err != nil {
-		log.Println(decryptionFailed)
 		return "", err
-
 	}
-	return string(decryptedText), nil
 
+	if len(ciphertext) < e.gcm.NonceSize() {
+		return "", errors.New("encrypted string is too short")
+	}
+
+	nonce, ciphertext := ciphertext[:e.gcm.NonceSize()], ciphertext[e.gcm.NonceSize():]
+	plaintext, err := e.gcm.Open(nil, nonce, ciphertext, nil)
+	if err != nil {
+		return "", err
+	}
+
+	return string(plaintext), nil
 }
