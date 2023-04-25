@@ -1,8 +1,8 @@
 package middlewares
 
 import (
+	"digital-dash-commons/utils"
 	"github.com/gofiber/fiber/v2"
-	"github.com/rs/xid"
 )
 
 const reqIDKey = "x-request-id"
@@ -13,7 +13,7 @@ func RequestID() fiber.Handler {
 
 		// Generate a new request ID if not present in the header
 		if requestID == "" {
-			requestID = xid.New().String()
+			requestID = string(utils.NewXID())
 		}
 
 		// Set the request ID in the header and store it in the context
