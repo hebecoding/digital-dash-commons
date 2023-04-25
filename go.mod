@@ -1,6 +1,6 @@
-module digital-dash-commons
+module github.com/hebecoding/digital-dash-commons
 
-go 1.19
+go 1.20
 
 require (
 	github.com/gofiber/fiber/v2 v2.44.0
