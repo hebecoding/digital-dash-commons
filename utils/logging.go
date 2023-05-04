@@ -8,6 +8,12 @@ type Logger struct {
 	*zap.SugaredLogger
 }
 
+// Config is the configuration for the logger.
+// Refer to https://pkg.go.dev/go.uber.org/zap#Config for more information on the fields.
+// If you pass missing fields, the logger will not function properly. All fields are required.
+// The default configuration is:
+//
+//	{ Level: "info", Development: false, Encoding: "json", OutputPaths: ["stdout"], ErrorOutputPaths: ["stderr"] }
 type Config struct {
 	Level            string
 	Development      bool
