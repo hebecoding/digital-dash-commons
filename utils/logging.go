@@ -122,3 +122,7 @@ func (l *Logger) Fatalf(template string, args ...interface{}) {
 func (l *Logger) With(args ...interface{}) *Logger {
 	return &Logger{l.SugaredLogger.With(args...)}
 }
+
+func (l *Logger) Sync() error {
+	return l.SugaredLogger.Sync()
+}
