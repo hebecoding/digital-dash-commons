@@ -7,7 +7,7 @@ import (
 )
 
 type XID struct {
-	ID string `json:"_id" bson:"_id"`
+	ID string
 }
 
 func NewXID() XID {
