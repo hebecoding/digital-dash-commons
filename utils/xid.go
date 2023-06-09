@@ -6,17 +6,19 @@ import (
 	"github.com/rs/xid"
 )
 
-type XID string
+type XID struct {
+	ID string `json:"_id" bson:"_id"`
+}
 
 func NewXID() XID {
-	return XID(xid.New().String())
+	return XID{xid.New().String()}
 }
 func (id *XID) String() string {
-	return string(*id)
+	return id.ID
 }
 
 func (id XID) MarshalBSON() ([]byte, error) {
-	return json.Marshal(id)
+	return json.Marshal(id.ID)
 }
 
 func (id *XID) UnmarshalBSON(data []byte) error {
@@ -26,7 +28,7 @@ func (id *XID) UnmarshalBSON(data []byte) error {
 		return err
 	}
 
-	*id = XID(xid)
+	id.ID = xid
 
 	return nil
 }
