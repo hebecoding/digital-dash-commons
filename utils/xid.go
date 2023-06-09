@@ -1,8 +1,9 @@
 package utils
 
 import (
+	"encoding/json"
+
 	"github.com/rs/xid"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 type XID string
@@ -15,15 +16,13 @@ func (id *XID) String() string {
 }
 
 func (id XID) MarshalBSON() ([]byte, error) {
-	return bson.Marshal(struct {
-		ID string
-	}{string(id)})
+	return json.Marshal(&id)
 }
 
 func (id *XID) UnmarshalBSON(data []byte) error {
 	var tmp struct{ ID string }
 
-	if err := bson.Unmarshal(data, &tmp); err != nil {
+	if err := json.Unmarshal(data, &tmp); err != nil {
 		return err
 	}
 
