@@ -9,7 +9,7 @@ require (
 	github.com/rs/xid v1.5.0
 	github.com/wagslane/go-password-validator v0.3.0
 	go.mongodb.org/mongo-driver v1.11.4
-	go.uber.org/zap v1.24.0
+	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.8.0
 	golang.org/x/time v0.3.0
 )
