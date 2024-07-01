@@ -3,7 +3,7 @@ module github.com/hebecoding/digital-dash-commons
 go 1.20
 
 require (
-	github.com/gofiber/fiber/v2 v2.44.0
+	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/redis/go-redis/v9 v9.0.4
 	github.com/rs/xid v1.5.0
