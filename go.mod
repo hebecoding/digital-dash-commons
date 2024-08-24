@@ -6,7 +6,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.44.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/redis/go-redis/v9 v9.0.4
-	github.com/rs/xid v1.5.0
+	github.com/rs/xid v1.6.0
 	github.com/wagslane/go-password-validator v0.3.0
 	go.mongodb.org/mongo-driver v1.11.4
 	go.uber.org/zap v1.24.0
